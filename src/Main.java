@@ -9,30 +9,30 @@ public class Main {
     private static final String MUSIC = "music";
     private static final String SPORT = "sport";
     private static final String ART = "art";
-    private static List<Question> questionsByCategory = new ArrayList<>();
+    private static List<Question> questions= new ArrayList<>();
 
     private static int userScore = 0;
 
 
     public static void main(String[] args) {
+
         List<Question> questions = buildQuestionsList();
 
         while (continueWithGame(questions)) {
 
             String selectedCategory = askForCategory();
-            Question currentQuestion = chooseQuestion(questions, selectedCategory);
+            List<Question> questionsByCategory = buildQuestionsByCategoryList(questions, selectedCategory);
+            Question currentQuestion = chooseQuestion(questionsByCategory);
             boolean userQuestionAnswer = askTheQuestion(currentQuestion);
-            //isAnswerCorrect(userQuestionAnswer, currentQuestion, questionsByCategory);
             isAnswerCorrect(userQuestionAnswer, currentQuestion, questions);
         }
     }
 
     private static boolean continueWithGame(List<Question> questions) {
-        //return (userScore >= MAX_SCORE || questionsByCategory.size() == 0);
-        return !(userScore >= MAX_SCORE || questions.size() == 0);
+        return ((userScore <= MAX_SCORE) && (questions.size() >=0));
     }
 
-    private static void isAnswerCorrect(boolean userQuestionAnswer, Question currentQuestion, List<Question> questionsByCategory) {
+    private static void isAnswerCorrect(boolean userQuestionAnswer, Question currentQuestion, List<Question> questions) {
         if (userQuestionAnswer){
             System.out.println("Has acertado!!!");
             calculateUserScore(currentQuestion);
@@ -41,7 +41,8 @@ public class Main {
         else {
             System.out.println("Nice try, pero no chaval ;-)");
         }
-        questionsByCategory.remove(0);
+        questions.remove(currentQuestion);
+
     }
 
     private static int calculateUserScore(Question currentQuestion) {
@@ -57,18 +58,23 @@ public class Main {
         return userQuestionAnswer == currentQuestion.isCorrectAnswer();
     }
 
-    private static Question chooseQuestion(List<Question> questions, String selectedCategory) {
+    private static Question chooseQuestion(List<Question> questionsByCategory) {
+        return questionsByCategory.get(0);
+    }
+
+
+
+    private static List<Question> buildQuestionsByCategoryList(List<Question> questions, String selectedCategory) {
         List<Question> questionsByCategory = new ArrayList<>();
         for (Question question: questions) {
             if (question.getCategory().equalsIgnoreCase(selectedCategory)) {
                 questionsByCategory.add(question);
-                }
             }
-        Question currentQuestion = questionsByCategory.get(0);
-        return currentQuestion;
+        }
+        return questionsByCategory;
     }
 
-    private static String askForCategory () {
+   private static String askForCategory() {
         System.out.println("Amb quina categoria vols jugar?" + '\'' + GEO + '\'' +
                 MUSIC + '\'' + SPORT + '\'' + ART);
         Scanner sc = new Scanner(System.in);
