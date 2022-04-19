@@ -31,7 +31,8 @@ public class Question {
         return userAnswer;
     }
 
-    public void setUserAnswer(boolean userAnswer) {this.userAnswer = userAnswer;
+    public void setUserAnswer(boolean userAnswer) {
+        this.userAnswer = userAnswer;
     }
 
     public int getPunctuation() {
