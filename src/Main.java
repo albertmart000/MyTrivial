@@ -4,85 +4,112 @@ import java.util.Scanner;
 
 public class Main {
 
-    private static final int MAX_SCORE = 50;
+    private static final int MAX_SCORE = 15;
     private static final String GEO = "geografia";
     private static final String MUSIC = "music";
     private static final String SPORT = "sport";
     private static final String ART = "art";
-    private static List<Question> questions= new ArrayList<>();
 
-    private static int userScore = 0;
+    private static Player player1;
+    private static Player player2;
+    private static Player currentPlayer;
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args){
 
-        List<Question> questions = buildQuestionsList();
+        List<Question> questions = buildQuestionList();
+        String namePlayer1 = askUserForName();
+        player1 = new Player(namePlayer1);
+        String namePlayer2 = askUserForName();
+        player2 = new Player(namePlayer2);
 
-        while (continueWithGame(questions)) {
 
+        currentPlayer = player1;
+        System.out.println("Empieza el jugador " + currentPlayer.getPlayerName());
+
+
+        while (questions.size() > 0 && currentPlayer.getPlayerScore() < MAX_SCORE) {
+
+            System.out.println("Es tu turno " + currentPlayer.getPlayerName());
             String selectedCategory = askForCategory();
-            List<Question> questionsByCategory = buildQuestionsByCategoryList(questions, selectedCategory);
-            Question currentQuestion = chooseQuestion(questionsByCategory);
-            boolean userQuestionAnswer = askTheQuestion(currentQuestion);
-            isAnswerCorrect(userQuestionAnswer, currentQuestion, questions);
+            Question questionByCategory = selectQuestionByCategory(questions, selectedCategory);
+
+            if (questionByCategory != null) {
+                playWithTheQuestion(questionByCategory);
+            } else {
+                System.out.println("No hay mas preguntas en esta categoria. Elige otra categoria");
+            }
+            switchPlayers();
+        }
+
+        printResult();
+    }
+
+
+    private static void printResult () { //Mostrar las puntuaciones de ambos jugadores
+
+        System.out.println("Tu puntuación final es: " + player1.getPlayerScore() + " Jugador " + player1.getPlayerName());
+        System.out.println("Tu puntuación final es: " + player2.getPlayerScore() + " Jugador " + player2.getPlayerName());
+
+    }
+
+    private static void switchPlayers () {
+        if (currentPlayer == player1) {
+            currentPlayer = player2;
+        } else {
+            currentPlayer = player1;
         }
     }
 
-    private static boolean continueWithGame(List<Question> questions) {
-        return ((userScore <= MAX_SCORE) && (questions.size() >=0));
-    }
-
-    private static void isAnswerCorrect(boolean userQuestionAnswer, Question currentQuestion, List<Question> questions) {
-        if (userQuestionAnswer){
-            System.out.println("Has acertado!!!");
-            calculateUserScore(currentQuestion);
-            System.out.println("Tu nueva puntuacion es " + userScore + " puntos");
-        }
-        else {
-            System.out.println("Nice try, pero no chaval ;-)");
-        }
-        questions.remove(currentQuestion);
-
-    }
-
-    private static int calculateUserScore(Question currentQuestion) {
-        userScore += currentQuestion.getPunctuation();
-        return userScore;
-    }
-
-    private static boolean askTheQuestion(Question currentQuestion) {
-        System.out.println(currentQuestion.getStatement() + "\n" + "Esta pregunta vale " + currentQuestion.getPunctuation() + " puntos " + "\n" +"Contesta True/False (T/F)");
+    private static String askUserForName () {
+        System.out.println("Introdueix el teu nom.");
         Scanner sc = new Scanner(System.in);
-        String text = sc.nextLine();
-        boolean userQuestionAnswer = text.equalsIgnoreCase("T");
-        return userQuestionAnswer == currentQuestion.isCorrectAnswer();
+        String name = sc.nextLine();
+        return name;
     }
 
-    private static Question chooseQuestion(List<Question> questionsByCategory) {
-        return questionsByCategory.get(0);
+    private static void playWithTheQuestion (Question question){
+        System.out.println(question.getStatement());
+        System.out.println("Es verdadero o falso? T/F ");
+        Scanner sc = new Scanner(System.in);
+        String userAnswer = sc.nextLine();
+        boolean userChoice = userAnswer.equalsIgnoreCase("T");
+
+        if (userChoice == question.isCorrectAnswer()) {
+            int score = currentPlayer.getPlayerScore() + question.getPunctuation();
+            currentPlayer.setPlayerScore(score);
+            System.out.println("Has acertado!");
+
+        } else System.out.println("Nice try, pero no chaval ;-)");
+
     }
 
-
-
-    private static List<Question> buildQuestionsByCategoryList(List<Question> questions, String selectedCategory) {
-        List<Question> questionsByCategory = new ArrayList<>();
-        for (Question question: questions) {
-            if (question.getCategory().equalsIgnoreCase(selectedCategory)) {
-                questionsByCategory.add(question);
+    private static Question selectQuestionByCategory(List < Question > questions, String selectedCategory){
+        Question oneQuestion = null;
+        for (int i = 0; i < questions.size(); i++) {
+            Question currentQuestion = questions.get(i);
+            if (currentQuestion.getCategory().equals(selectedCategory)) {
+                oneQuestion = currentQuestion;
+                questions.remove(i);
             }
         }
-        return questionsByCategory;
+        return oneQuestion;
     }
 
-   private static String askForCategory() {
-        System.out.println("Amb quina categoria vols jugar?" + '\'' + GEO + '\'' +
-                MUSIC + '\'' + SPORT + '\'' + ART);
+
+    private static String askForCategory() {
+        System.out.println(" Amb quina categoria vols jugar? ");
+        System.out.println(" 1. geografía / 2. musica / 3. esport / 4. art ");
         Scanner sc = new Scanner(System.in);
-        return sc.nextLine();
+        int selectedCategory = sc.nextInt();
+        if (selectedCategory == 1) return GEO;
+        else if (selectedCategory == 2) return MUSIC;
+        else if (selectedCategory == 3) return SPORT;
+        else if (selectedCategory == 4) return ART;
+        return null;
     }
 
-    private static List<Question> buildQuestionsList () {
-
+    private static List<Question> buildQuestionList () {
         List<Question> questions = new ArrayList<>();
 
         questions.add(new Question(GEO, "La capital de Francia es Paris", true, 1));
@@ -94,7 +121,7 @@ public class Main {
         questions.add(new Question(MUSIC, "Mozart nació en la ciudad de Salzburg", true, 3));
         questions.add(new Question(MUSIC, "Beethoven es un compositor barroco", false, 2));
         questions.add(new Question(MUSIC, "Bach inventó el clavicordio", false, 2));
-        questions.add(new Question(MUSIC, "Elvis Presjey es el Rey del Rock'nd Roll", true, 1));
+        questions.add(new Question(MUSIC, "Elvis Presley es el Rey del Rock'nd Roll", true, 1));
         questions.add(new Question(MUSIC, "El tema Like a rolling stone es de los Rolling Stone", false, 1));
 
         questions.add(new Question(SPORT, "En un equipo de voleibol hay 5 jugadores", false, 2));
@@ -107,9 +134,10 @@ public class Main {
         questions.add(new Question(ART, "Picasso nació en Paris", false, 3));
         questions.add(new Question(ART, "Velazquez es un pintor del S.XIX", false, 2));
         questions.add(new Question(ART, "Picasso pinto el Guernika en 1937", true, 3));
-        questions.add(new Question(ART, "La pieta es una escultura de Miguel Angel", true, 2));
+        questions.add(new Question(ART, "La Pieta es una escultura de Miguel Angel", true, 2));
+
+
 
         return questions;
     }
-
 }
