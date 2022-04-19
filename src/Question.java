@@ -7,7 +7,7 @@ public class Question {
     private int punctuation;
 
     public Question(String category, String statement, boolean correctAnswer,
-                     int punctuation) {
+                    int punctuation) {
         this.category = category;
         this.statement = statement;
         this.correctAnswer = correctAnswer;
